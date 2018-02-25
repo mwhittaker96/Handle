@@ -11,18 +11,18 @@ import time
 
 mutex = Lock()
 
+#Confidence threshold for main frame window
 classify_threshold = 65
 
 global message
-message = ''
-
-
-labels = ['Heart: ', 'Thumb: ', 'Peace: ', 'E: ', 'C: ', 'I: ', 'A: ', 'O: ', 'U: ']
 global percentages
+
+message = ''
+labels = ['Heart: ', 'Thumb: ', 'Peace: ', 'E: ', 'C: ', 'I: ', 'A: ', 'O: ', 'U: ']
 percentages = [0,0,0,0,0,0,0,0,0]
 
 """
-This will be run on the other thread
+classifies image then updates values displayed on results window
 """
 def display_results():
     result = classify_image('hot_frame.jpg')
@@ -37,7 +37,6 @@ def display_results():
             indexFound = count
         count += 1
 
-
     if(result[1][indexFound] >= classify_threshold):
         message = str(result[0][indexFound] +": "+str(result[1][indexFound])+"%")
     else:
@@ -48,11 +47,11 @@ def display_results():
 
     mutex.release()
 
-
-
-
 ###############################################################################
 
+"""
+Loads conv. neural net image classifier model
+"""
 def load_graph(model_file):
     graph = tf.Graph()
     graph_def = tf.GraphDef()
@@ -66,8 +65,9 @@ def load_graph(model_file):
 model_file = "/tmp/output_graph.pb"
 graph = load_graph(model_file)
 
-
-
+"""
+Normalize captured filtered frame
+"""
 def read_tensor_from_image_file(file_name, input_height=299, input_width=299,
 				input_mean=0, input_std=255):
 
@@ -94,6 +94,9 @@ def read_tensor_from_image_file(file_name, input_height=299, input_width=299,
     result = sess.run(normalized)
     return result
 
+"""
+Loads class labels for model
+"""
 def load_labels(label_file):
   label = []
   proto_as_ascii_lines = tf.gfile.GFile(label_file).readlines()
@@ -139,18 +142,17 @@ def classify_image(image_file_name):
 
 
 
-#video streaming and processing
+#video streaming and skin filtering
 cap = cv2.VideoCapture(0)
 hsvSkinThreshold = [0,48,80]
 rgbSkinThreshold = [20, 255, 255]
 
+# Meta-data for labels
 font                   = cv2.FONT_HERSHEY_SIMPLEX
 bottomLeftCornerOfText = (10,400)
 fontScale              = 1
 fontColor              = (255,255,255)
 lineType               = 2
-
-
 
 fontSmall              = cv2.FONT_HERSHEY_SIMPLEX
 small                  = (10,400)
